@@ -11,6 +11,7 @@ import {
 } from "@/app/redux/slices/appointmentSlice";
 import { fetchProfile, ProfileData } from "@/app/redux/slices/profileSlice";
 import { fetchDoctors } from "@/app/redux/slices/doctorSlice";
+import { fetchLabWorks } from "@/app/redux/slices/labWorkSlice";
 
 export default function DashboardLayout({
   children,
@@ -27,7 +28,6 @@ export default function DashboardLayout({
   const profile = useAppSelector((state) => {
     return state?.profile?.profile as ProfileData;
   });
-
   useEffect(() => {
     const fetchUserData = async () => {
       if (!session?.user) return;
@@ -53,6 +53,8 @@ export default function DashboardLayout({
         }
 
         fetchTasks.push(() => dispatch(fetchDoctors({ userId: id })));
+
+        fetchTasks.push(() => dispatch(fetchLabWorks()));
       }
 
       if (role === "Doctor" && !patients?.length) {

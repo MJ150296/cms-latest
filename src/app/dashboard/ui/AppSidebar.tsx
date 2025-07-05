@@ -19,6 +19,8 @@ import {
   Receipt,
   BadgePercent,
   User,
+  FlaskConical,
+  IndianRupee,
 } from "lucide-react";
 import { SignOut } from "@/app/components/auth/signout-button";
 import { useSession } from "next-auth/react";
@@ -70,7 +72,7 @@ const allMenuItems = [
   },
   {
     name: "Billing",
-    icon: <Receipt size={20} />,
+    icon: <IndianRupee size={20} />,
     path: (role: string) => `/dashboard/pages/${role}/patientBilling`,
     roles: ["Doctor", "Patient"],
   },
@@ -78,6 +80,12 @@ const allMenuItems = [
     name: "Revenue",
     icon: <BadgePercent size={20} />,
     path: (role: string) => `/dashboard/pages/${role}/revenue`,
+    roles: ["SuperAdmin", "Admin", "clientAdmin", "Doctor"],
+  },
+  {
+    name: "Lab Work",
+    icon: <FlaskConical size={20} />,
+    path: (role: string) => `/dashboard/pages/${role}/labWork`,
     roles: ["SuperAdmin", "Admin", "clientAdmin", "Doctor"],
   },
   {
