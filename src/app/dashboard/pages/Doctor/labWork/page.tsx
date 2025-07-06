@@ -195,11 +195,17 @@ const LabWork: React.FC = () => {
             Lab Work Orders
           </div>
           <Button
-            className="flex gap-2"
+            className="hidden md:flex gap-2"
             onClick={() => setIsAddModalOpen(true)}
           >
             <PlusCircle size={18} />
             Add New Lab Work
+          </Button>
+          <Button
+            className="flex md:hidden gap-2"
+            onClick={() => setIsAddModalOpen(true)}
+          >
+            <PlusCircle size={18} />
           </Button>
           <Modal
             isOpen={isAddModalOpen}
@@ -219,8 +225,8 @@ const LabWork: React.FC = () => {
         </div>
 
         {/* Search Bar */}
-        <div className="w-full flex items-center justify-between">
-          <div className="w-1/2 flex gap-2 items-center">
+        <div className="w-full px-5 md:px-0 flex flex-col space-y-2 md:space-y-0 md:flex-row items-start md:items-center justify-between">
+          <div className="w-1/2 md:full flex gap-2 items-center">
             <Search size={18} />
             <Input
               placeholder="Search by patient name"
