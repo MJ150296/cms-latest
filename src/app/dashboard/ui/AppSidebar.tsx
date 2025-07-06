@@ -16,7 +16,6 @@ import {
   Hospital,
   ClipboardList,
   UserCog,
-  Receipt,
   BadgePercent,
   User,
   FlaskConical,

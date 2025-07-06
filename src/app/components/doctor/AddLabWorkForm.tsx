@@ -189,8 +189,12 @@ const AddLabWorkForm: React.FC<AddLabWorkFormProps> = ({
 
       onSuccess?.();
       onClose();
-    } catch (err: any) {
-      console.error("[SUBMIT_LABWORK_ERROR]", err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        console.error("[SUBMIT_LABWORK_ERROR]", err.message);
+      } else {
+        console.error("[SUBMIT_LABWORK_ERROR]", err);
+      }
     }
   };
 

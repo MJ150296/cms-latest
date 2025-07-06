@@ -30,7 +30,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import EditLabWorkForm from "@/app/components/doctor/EditLabWorkForm";
-import { set } from "mongoose";
 
 // Update interface to match actual data structure
 interface LabWorkItem {

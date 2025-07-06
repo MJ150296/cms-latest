@@ -26,13 +26,19 @@ export async function POST(request: Request) {
 
     console.log(`SMS sent to ${phoneNumber}: ${response.sid}`);
 
-    return NextResponse.json({ success: true, sid: response.sid }, { status: 200 });
-  } catch (error: any) {
+    return NextResponse.json(
+      { success: true, sid: response.sid },
+      { status: 200 }
+    );
+  } catch (error: unknown) {
     console.error("Twilio SMS Error:", error);
+
     return NextResponse.json(
       {
         error:
-          error?.message || "Failed to send SMS. Please try again later.",
+          error instanceof Error
+            ? error.message
+            : "Failed to send SMS. Please try again later.",
       },
       { status: 500 }
     );

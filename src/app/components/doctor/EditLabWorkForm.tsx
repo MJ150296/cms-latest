@@ -1,5 +1,5 @@
 // src/app/components/doctor/labwork/EditLabWorkForm.tsx
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -206,7 +206,10 @@ const EditLabWorkForm: React.FC<EditLabWorkFormProps> = ({
           <Select
             value={formData.status}
             onValueChange={(val) =>
-              setFormData((prev) => ({ ...prev, status: val as any }))
+              setFormData((prev) => ({
+                ...prev,
+                status: val as EditableLabWorkFields["status"],
+              }))
             }
           >
             <SelectTrigger>
