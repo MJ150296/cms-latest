@@ -226,7 +226,7 @@ const LabWork: React.FC = () => {
 
         {/* Search Bar */}
         <div className="w-full px-5 md:px-0 flex flex-col space-y-2 md:space-y-0 md:flex-row items-start md:items-center justify-between">
-          <div className="w-1/2 md:full flex gap-2 items-center">
+          <div className="w-full md:w-1/2 flex gap-2 items-center">
             <Search size={18} />
             <Input
               placeholder="Search by patient name"
