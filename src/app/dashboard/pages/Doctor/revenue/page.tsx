@@ -12,12 +12,7 @@ import {
   updateBillingRecord,
 } from "@/app/redux/slices/billingSlice";
 import { format } from "date-fns";
-import {
-  ReceiptIndianRupee,
-  TrendingUp,
-  PieChart,
-  IndianRupee,
-} from "lucide-react";
+import { ReceiptIndianRupee, PieChart, IndianRupee } from "lucide-react";
 import DataTable, { ColumnDef } from "@/app/components/DataTable";
 import EditBillingDialog from "@/app/components/doctor/EditBillingDialog";
 

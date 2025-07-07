@@ -20,7 +20,7 @@ import { useAppSelector } from "@/app/redux/store/hooks";
 import { selectPatients } from "@/app/redux/slices/patientSlice";
 import { selectAppointments } from "@/app/redux/slices/appointmentSlice";
 import { selectBillings } from "@/app/redux/slices/billingSlice";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { DashboardBarChart } from "../../ui/DashboardBarChart";
 import { ChartConfig } from "@/components/ui/chart";
 import { ProfileData } from "@/app/redux/slices/profileSlice";
