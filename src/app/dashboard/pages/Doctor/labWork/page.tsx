@@ -30,6 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import EditLabWorkForm from "@/app/components/doctor/EditLabWorkForm";
+import LabDashboardAnalytics from "@/app/components/doctor/LabDashboardAnalytics";
 
 // Update interface to match actual data structure
 interface LabWorkItem {
@@ -66,7 +67,7 @@ const LabWork: React.FC = () => {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(9); // 9 items per page for grid of 3x2
+  const [itemsPerPage, setItemsPerPage] = useState(6); // 6 items per page for grid of 3x2
 
   const [selectedLabWork, setSelectedLabWork] = useState<LabWorkItem | null>(
     null
@@ -269,7 +270,7 @@ const LabWork: React.FC = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="9">9</SelectItem>
+                  <SelectItem value="6">6</SelectItem>
                   <SelectItem value="12">12</SelectItem>
                   <SelectItem value="18">18</SelectItem>
                   <SelectItem value="24">24</SelectItem>
@@ -615,6 +616,8 @@ const LabWork: React.FC = () => {
           </div>
         </div>
       </Modal>
+
+      <LabDashboardAnalytics />
     </DashboardLayout>
   );
 };

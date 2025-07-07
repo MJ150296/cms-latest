@@ -12,15 +12,15 @@ import {
   Syringe,
   User,
   AlertTriangle,
-  ReceiptIndianRupee,
   UserRoundPlus,
   ClipboardPlus,
+  LucideFlaskConical,
 } from "lucide-react";
 import { useAppSelector } from "@/app/redux/store/hooks";
 import { selectPatients } from "@/app/redux/slices/patientSlice";
 import { selectAppointments } from "@/app/redux/slices/appointmentSlice";
 import { selectBillings } from "@/app/redux/slices/billingSlice";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { DashboardBarChart } from "../../ui/DashboardBarChart";
 import { ChartConfig } from "@/components/ui/chart";
 import { ProfileData } from "@/app/redux/slices/profileSlice";
@@ -44,6 +44,8 @@ export default function DoctorDashboard() {
     (state) => state?.profile?.profile as ProfileData
   );
   const { data: session } = useSession();
+
+  const { data: labWorks } = useAppSelector((state) => state.labWork);
 
   const [tableData, setTableData] = useState<
     {
@@ -89,14 +91,9 @@ export default function DoctorDashboard() {
     }
   }, [patients]);
 
-  const totalRevenue = useMemo(
-    () =>
-      billings?.reduce(
-        (sum, billing) => sum + (billing.amountReceived || 0),
-        0
-      ) || 0,
-    [billings]
-  );
+  const pendingCount = useMemo(() => {
+    return labWorks?.filter((lab) => lab.status === "Pending").length || 0;
+  }, [labWorks]);
 
   const aggregatedAppointments = useMemo(() => {
     const result = {
@@ -174,11 +171,11 @@ export default function DoctorDashboard() {
       LinkURL: "/dashboard/pages/Doctor/appointments",
     },
     {
-      title: "Total Revenue",
-      value: `${totalRevenue.toLocaleString()}`,
-      icon: <ReceiptIndianRupee size={24} color="white" />,
+      title: "Pending LabWorks",
+      value: `${pendingCount || 0}`,
+      icon: <LucideFlaskConical size={24} color="white" />,
       color: "bg-orange-500",
-      LinkURL: "/dashboard/pages/Doctor/revenue",
+      LinkURL: "/dashboard/pages/Doctor/labWork",
     },
     {
       title: "Upcoming Consultations",
