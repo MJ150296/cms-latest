@@ -11,6 +11,11 @@ const ALLOWED_FILE_TYPES = [
   "image/jpeg",
   "image/png",
   "image/webp",
+  "image/gif",          // Added
+  "image/bmp",          // Added
+  "image/svg+xml",      // Added
+  "image/heic",         // For iOS
+  "image/heif",         // For iOS
   "application/pdf",
 ];
 
