@@ -104,8 +104,7 @@ export async function PUT(request: NextRequest) {
     }));
 
     // Validate partial input using Zod (excluding attachments)
-    const { attachments: _, ...updatesWithoutAttachments } = updates;
-
+    const { attachments: _, ...updatesWithoutAttachments } = updates; // eslint-disable-line @typescript-eslint/no-unused-vars
     const parsed = labWorkSchema.partial().parse(updatesWithoutAttachments);
 
     interface UpdateOperations {
