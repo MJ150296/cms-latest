@@ -2,7 +2,6 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { LabWorkInput } from "@/schemas/zobLabWorkSchema";
 import { Types } from "mongoose";
-import { EditableLabWorkFields } from "@/app/components/doctor/EditLabWorkForm";
 
 interface LabWorkPatient {
   _id: Types.ObjectId | string;
@@ -48,8 +47,8 @@ export const fetchLabWorks = createAsyncThunk("labWork/fetchAll", async () => {
 // ➕ Create lab work
 export const createLabWork = createAsyncThunk(
   "labWork/create",
-  async (payload: LabWorkInput) => {
-    const res = await axios.post<ILabWork>("/api/doctor/labwork/add", payload);
+  async (formData: FormData) => {
+    const res = await axios.post<ILabWork>("/api/doctor/labWork/add", formData);
     return res.data;
   }
 );
@@ -57,13 +56,7 @@ export const createLabWork = createAsyncThunk(
 // 🔄 Update lab work
 export const updateLabWork = createAsyncThunk(
   "labWork/update",
-  async ({
-    id,
-    updates,
-  }: {
-    id: string;
-    updates: Partial<EditableLabWorkFields>;
-  }) => {
+  async ({ id, updates }: { id: string; updates: FormData }) => {
     const res = await axios.put<ILabWork>(
       `/api/doctor/labWork/update/${id}`,
       updates

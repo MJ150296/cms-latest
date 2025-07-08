@@ -2,10 +2,29 @@
 import { LabWorkInput } from "@/schemas/zobLabWorkSchema";
 import mongoose, { Schema, model, Types, Document } from "mongoose";
 
+// Define the attachment interface
+export interface Attachment {
+  public_id: string;
+  url: string;
+  format: string;
+  bytes: number;
+  original_filename: string;
+}
+
 // Extend LabWorkInput with Mongoose's Document
 export interface ILabWork extends LabWorkInput, Document {
   _id: Types.ObjectId;
+  attachments?: Attachment[];
 }
+
+// Define Attachment schema
+const AttachmentSchema = new Schema({
+  public_id: { type: String, required: true },
+  url: { type: String, required: true },
+  format: { type: String, required: true },
+  bytes: { type: Number, required: true },
+  original_filename: { type: String, required: true },
+});
 
 const LabWorkSchema = new Schema<ILabWork>({
   patientId: {
@@ -43,15 +62,16 @@ const LabWorkSchema = new Schema<ILabWork>({
   impressionsTakenOn: { type: Date },
   sentToLabOn: { type: Date },
   expectedDeliveryDate: { type: Date },
+  reWorkSentDate: { type: Date },
   receivedFromLabOn: { type: Date },
   fittedOn: { type: Date },
   status: {
     type: String,
-    enum: ["Pending", "In Progress", "Received", "Fitted", "Cancelled"],
+    enum: ["Pending", "Rework", "Received", "Fitted", "Cancelled"],
     default: "Pending",
   },
   remarks: String,
-  attachments: [{ type: String }],
+  attachments: [AttachmentSchema],
 });
 
 const LabWorkModel =

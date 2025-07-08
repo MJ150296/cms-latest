@@ -2,6 +2,14 @@
 import { Types } from "mongoose";
 import { z } from "zod";
 
+const attachmentSchema = z.object({
+  public_id: z.string(),
+  url: z.string().url(),
+  format: z.string(),
+  bytes: z.number(),
+  original_filename: z.string(),
+});
+
 // Zod Schema
 export const labWorkSchema = z.object({
   patientId: z.custom<Types.ObjectId>(), // not z.string()
@@ -26,16 +34,17 @@ export const labWorkSchema = z.object({
   impressionsTakenOn: z.coerce.date().optional(),
   sentToLabOn: z.coerce.date().optional(),
   expectedDeliveryDate: z.coerce.date().optional(),
+  reWorkSentDate: z.coerce.date().optional(),
   receivedFromLabOn: z.coerce.date().optional(),
   fittedOn: z.coerce.date().optional(),
 
   status: z
-    .enum(["Pending", "In Progress", "Received", "Fitted", "Cancelled"])
+    .enum(["Pending", "Rework", "Received", "Fitted", "Cancelled"])
     .optional()
     .default("Pending"),
 
   remarks: z.string().optional(),
-  attachments: z.array(z.string()).optional(),
+  attachments: z.array(attachmentSchema).optional(),
 });
 
 export type LabWorkInput = z.infer<typeof labWorkSchema>;

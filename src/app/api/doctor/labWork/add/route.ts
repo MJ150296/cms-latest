@@ -1,27 +1,79 @@
 import { NextRequest, NextResponse } from "next/server";
 import LabWorkModel from "@/app/model/LabWork.model";
 import dbConnect from "@/app/utils/dbConnect";
-import { labWorkSchema } from "@/schemas/zobLabWorkSchema"; // Zod schema
+import { labWorkSchema } from "@/schemas/zobLabWorkSchema";
 import { z } from "zod";
+import { uploadToCloudinary } from "@/app/utils/cloudinaryUpload";
+import DoctorModel from "@/app/model/Doctor.model";
 
-// ✅ Controller logic inside the route
+// File validation constants
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_FILE_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "application/pdf",
+];
+
 async function createLabWork(req: NextRequest) {
   await dbConnect();
 
   try {
-    const body = await req.json();
+    const formData = await req.formData();
+    const fileEntries = formData.getAll("attachments");
+    const files = fileEntries.filter(
+      (entry) => entry instanceof File && entry.size > 0
+    ) as File[];
 
-    // ✅ Validate incoming data with Zod
-    const parsed = labWorkSchema.parse(body);
+    // Validate files
+    const fileErrors = [];
+    for (const file of files) {
+      if (file.size > MAX_FILE_SIZE) {
+        fileErrors.push(`File ${file.name} exceeds 10MB limit`);
+      }
+      if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+        fileErrors.push(`Invalid file type for ${file.name}: ${file.type}`);
+      }
+    }
 
-    // ✅ Inject today's date for sentToLabOn
-    const withSentToLabOn = {
-      ...parsed,
-      sentToLabOn: new Date(), // sets to current date and time
+    if (fileErrors.length > 0) {
+      return {
+        success: false,
+        error: "File validation failed",
+        details: fileErrors,
+        status: 400,
+      };
+    }
+
+    // Upload files to Cloudinary using your utility function
+    const uploadPromises = files.map((file) => uploadToCloudinary(file));
+    const cloudinaryResults = await Promise.all(uploadPromises);
+
+    // Prepare attachments data
+    const attachments = cloudinaryResults.map((result, index) => ({
+      public_id: result.public_id,
+      url: result.secure_url,
+      format: result.format,
+      bytes: result.bytes,
+      original_filename: result.original_filename || files[index].name,
+    }));
+
+    // Extract other form data
+    const formObject = Object.fromEntries(formData.entries());
+
+    // Prepare lab work data
+    const labWorkData = {
+      ...formObject,
+      toothNumbers: JSON.parse(formObject.toothNumbers as string),
+      attachments,
+      sentToLabOn: new Date().toISOString(),
     };
 
-    // ✅ Save to database
-    const newLabWork = await LabWorkModel.create(withSentToLabOn);
+    // Validate with Zod
+    const parsed = labWorkSchema.parse(labWorkData);
+
+    // Save to database
+    const newLabWork = await LabWorkModel.create(parsed);
 
     return {
       success: true,
@@ -30,7 +82,6 @@ async function createLabWork(req: NextRequest) {
   } catch (error) {
     console.error("[LABWORK_CREATE_ERROR]", error);
 
-    // Zod validation error
     if (error instanceof z.ZodError) {
       return {
         success: false,
@@ -42,19 +93,24 @@ async function createLabWork(req: NextRequest) {
 
     return {
       success: false,
-      error: "Failed to create lab work entry",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to create lab work entry",
       status: 500,
     };
   }
 }
 
-// ✅ POST handler
 export async function POST(req: NextRequest) {
   const response = await createLabWork(req);
 
   if (!response.success) {
     return NextResponse.json(
-      { error: response.error, details: response.details || null },
+      {
+        error: response.error,
+        details: response.details || null,
+      },
       { status: response.status || 500 }
     );
   }

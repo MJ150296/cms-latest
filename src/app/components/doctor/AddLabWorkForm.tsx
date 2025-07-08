@@ -14,9 +14,11 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { teethOptions } from "../BookAppointmentForm";
-import { useAppSelector } from "@/app/redux/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/app/redux/store/hooks";
 import { Patient, selectPatients } from "@/app/redux/slices/patientSlice";
 import { ProfileData } from "@/app/redux/slices/profileSlice";
+import { FilePlus2, Loader2, X } from "lucide-react";
+import { createLabWork } from "@/app/redux/slices/labWorkSlice";
 
 interface AddLabWorkFormProps {
   onClose: () => void;
@@ -83,7 +85,10 @@ const AddLabWorkForm: React.FC<AddLabWorkFormProps> = ({
   onClose,
   onSuccess,
 }) => {
+  const dispatch = useAppDispatch();
+
   const [formData, setFormData] = useState({
+    doctorId: "",
     patientId: "",
     labName: "",
     orderType: "",
@@ -94,7 +99,8 @@ const AddLabWorkForm: React.FC<AddLabWorkFormProps> = ({
     remarks: "",
     shade: "",
     material: "",
-    impressionsTakenOn: new Date().toLocaleDateString("en-CA"), // ISO format
+    impressionsTakenOn: new Date().toLocaleDateString("en-CA"),
+    attachments: [] as File[],
   });
 
   const patients = useAppSelector(selectPatients);
@@ -104,6 +110,7 @@ const AddLabWorkForm: React.FC<AddLabWorkFormProps> = ({
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [patientQuery, setPatientQuery] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
@@ -124,11 +131,10 @@ const AddLabWorkForm: React.FC<AddLabWorkFormProps> = ({
   };
 
   useEffect(() => {
-    // Set doctorId from profile if available
     if (profile?._id) {
       setFormData((prev) => ({
         ...prev,
-        doctorId: profile._id, // Assuming doctorId is the same as profile._id
+        doctorId: profile._id,
       }));
     }
   }, [profile]);
@@ -169,23 +175,62 @@ const AddLabWorkForm: React.FC<AddLabWorkFormProps> = ({
     []
   );
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
+      setFormData((prev) => ({
+        ...prev,
+        attachments: [...prev.attachments, ...newFiles],
+      }));
+    }
+  };
+
+  const removeFile = (index: number) => {
+    setFormData((prev) => {
+      const updatedFiles = [...prev.attachments];
+      updatedFiles.splice(index, 1);
+      return { ...prev, attachments: updatedFiles };
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validate() || isSubmitting) return;
 
-    if (!validate()) return;
-
-    console.log("[LABWORK_FORM_DATA]", formData);
+    setIsSubmitting(true);
 
     try {
-      const res = await fetch("/api/doctor/labWork/add", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      const formDataToSend = new FormData();
 
-      const data = await res.json();
+      // Append all form fields
+      formDataToSend.append("patientId", formData.patientId);
+      formDataToSend.append("doctorId", formData.doctorId);
+      formDataToSend.append("labName", formData.labName);
+      formDataToSend.append("orderType", formData.orderType);
+      formDataToSend.append("othersText", formData.othersText);
+      formDataToSend.append(
+        "toothNumbers",
+        JSON.stringify(formData.toothNumbers)
+      );
+      formDataToSend.append(
+        "expectedDeliveryDate",
+        formData.expectedDeliveryDate
+      );
+      formDataToSend.append("status", formData.status);
+      formDataToSend.append("remarks", formData.remarks);
+      formDataToSend.append("shade", formData.shade);
+      formDataToSend.append("material", formData.material);
+      formDataToSend.append("impressionsTakenOn", formData.impressionsTakenOn);
 
-      if (!res.ok) throw new Error(data.error || "Submission failed");
+      // Append files
+      if (formData.attachments.length > 0) {
+        formData.attachments.forEach((file) => {
+          formDataToSend.append("attachments", file);
+        });
+      }
+      // Dispatch the action to create lab work
+      // Using unwrap to handle errors directly
+      await dispatch(createLabWork(formDataToSend)).unwrap();
 
       onSuccess?.();
       onClose();
@@ -195,6 +240,8 @@ const AddLabWorkForm: React.FC<AddLabWorkFormProps> = ({
       } else {
         console.error("[SUBMIT_LABWORK_ERROR]", err);
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -376,12 +423,73 @@ const AddLabWorkForm: React.FC<AddLabWorkFormProps> = ({
         />
       </div>
 
+      {/* Attachments */}
+      <div>
+        <Label>Attachments (Images/PDF)</Label>
+        <div className="flex items-center gap-2">
+          <Label
+            htmlFor="attachments"
+            className="flex items-center gap-1 px-4 py-2 border rounded-md cursor-pointer bg-gray-50 hover:bg-gray-100"
+          >
+            <FilePlus2 size={16} /> Add Files
+          </Label>
+          <Input
+            id="attachments"
+            type="file"
+            multiple
+            accept=".jpeg,.jpg,.png,.webp,.pdf"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+          {formData.attachments.length > 0 && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() =>
+                setFormData((prev) => ({ ...prev, attachments: [] }))
+              }
+            >
+              <X size={16} />
+            </Button>
+          )}
+        </div>
+        {formData.attachments.length > 0 && (
+          <ul className="mt-2">
+            {formData.attachments.map((file, index) => (
+              <li
+                key={index}
+                className="flex items-center justify-between text-sm text-gray-600"
+              >
+                <span>
+                  {file.name} ({(file.size / 1024).toFixed(2)} KB)
+                </span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeFile(index)}
+                >
+                  <X size={14} />
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
       {/* Actions */}
       <div className="flex justify-end gap-2 pt-4">
         <Button variant="outline" type="button" onClick={onClose}>
           Cancel
         </Button>
-        <Button type="submit">Submit</Button>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            "Submit"
+          )}
+        </Button>
       </div>
     </form>
   );

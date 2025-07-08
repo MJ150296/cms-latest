@@ -10,6 +10,7 @@ import {
   ChevronLeft,
   Edit,
   Trash2,
+  ImageIcon,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -31,15 +32,19 @@ import {
 } from "@/components/ui/select";
 import EditLabWorkForm from "@/app/components/doctor/EditLabWorkForm";
 import LabDashboardAnalytics from "@/app/components/doctor/LabDashboardAnalytics";
+import { Attachment } from "@/app/model/LabWork.model";
+import ViewAttachment from "@/app/components/doctor/ViewAttachment";
+import { format } from "path";
 
 // Update interface to match actual data structure
-interface LabWorkItem {
+export interface LabWorkItem {
   id: string;
   patientName: string;
   orderType: string;
   labName: string;
   status: "Pending" | "Received" | "Fitted" | "Cancelled";
   expectedDeliveryDate?: Date | string | null;
+  reWorkSentDate?: Date | string | null; // Add reWorkSentDate
   othersText?: string | null; // Add null here
   toothNumbers?: (string | number)[] | null; // Allow numbers too if needed
   shade?: string | null;
@@ -49,14 +54,15 @@ interface LabWorkItem {
   receivedFromLabOn?: Date | string | null;
   fittedOn?: Date | string | null;
   remarks?: string | null;
-  attachments?: string[] | null;
+  attachments?: Attachment[] | null;
 }
 
 const statusColor = {
   Pending: "bg-yellow-100 text-yellow-800",
   Received: "bg-green-100 text-green-800",
-  Fitted: "bg-emerald-100 text-emerald-800",
+  Fitted: "bg-blue-100 text-blue-800",
   Cancelled: "bg-red-100 text-red-800",
+  Rework: "bg-orange-100 text-orange-800",
 };
 
 const LabWork: React.FC = () => {
@@ -76,6 +82,12 @@ const LabWork: React.FC = () => {
   const [showConfirm, setShowConfirm] = useState(false);
 
   const [isEditMode, setIsEditMode] = useState(false);
+
+  // Add new state for attachment modal
+  const [selectedAttachment, setSelectedAttachment] =
+    useState<Attachment | null>(null);
+  const [isAttachmentModalOpen, setIsAttachmentModalOpen] = useState(false);
+  const [isDeletingAttachment, setIsDeletingAttachment] = useState(false);
 
   // Get actual data from Redux store
   const { data: labWorks } = useAppSelector((state) => state.labWork);
@@ -159,7 +171,7 @@ const LabWork: React.FC = () => {
     return pages;
   };
 
-  const handleCardClick = (item: LabWorkItem) => {
+  const handleCardClick = (item: Omit<LabWorkItem, "attachments">) => {
     setSelectedLabWork(item);
     setIsModalOpen(true);
   };
@@ -179,6 +191,56 @@ const LabWork: React.FC = () => {
     } catch (error) {
       console.error("Error deleting lab work:", error);
       // Optional: Show error notification
+    }
+  };
+
+  // Add new function to handle attachment deletion
+  const handleDeleteAttachment = async (publicId: string) => {
+    if (!selectedLabWork) return;
+
+    setIsDeletingAttachment(true);
+
+    try {
+      // Make API call to delete attachment
+      const response = await fetch(`/api/doctor/labWork/deleteAttachments`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          labWorkId: selectedLabWork.id,
+          publicId,
+          format: selectedLabWork.attachments?.find(
+            (a) => a.public_id === publicId
+          )?.format, // Default to jpg if format not found
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete attachment");
+      }
+
+      // Update the selected lab work in state
+      setSelectedLabWork((prev) => {
+        if (!prev) return null;
+        const updatedAttachments =
+          prev.attachments?.filter((a) => a.public_id !== publicId) || [];
+        return {
+          ...prev,
+          attachments: updatedAttachments,
+        };
+      });
+
+      // Close the attachment modal
+      setIsAttachmentModalOpen(false);
+
+      // Show success message
+      // (You can implement a toast notification here)
+    } catch (error) {
+      console.error("Error deleting attachment:", error);
+      // Show error message
+    } finally {
+      setIsDeletingAttachment(false);
     }
   };
 
@@ -547,6 +609,18 @@ const LabWork: React.FC = () => {
                   </div>
                   <div>
                     <h4 className="text-sm font-medium text-muted-foreground">
+                      Rework Sent On
+                    </h4>
+                    <p>
+                      {selectedLabWork.reWorkSentDate
+                        ? new Date(
+                            selectedLabWork.reWorkSentDate
+                          ).toLocaleDateString()
+                        : "N/A"}
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-muted-foreground">
                       Fitted On
                     </h4>
                     <p>
@@ -576,20 +650,61 @@ const LabWork: React.FC = () => {
                         <h4 className="text-sm font-medium text-muted-foreground">
                           Attachments
                         </h4>
-                        <div className="flex flex-wrap gap-2 mt-2">
+                        <div className="grid grid-cols-3 gap-3 mt-2">
                           {selectedLabWork.attachments.map(
-                            (attachment, index) => (
-                              <a
-                                key={index}
-                                href={attachment}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:underline flex items-center gap-1"
-                              >
-                                <FileText className="h-4 w-4" />
-                                Attachment {index + 1}
-                              </a>
-                            )
+                            (attachment, index) => {
+                              const isImage = [
+                                "jpg",
+                                "jpeg",
+                                "png",
+                                "webp",
+                              ].includes(attachment.format.toLowerCase());
+                              const isPDF =
+                                attachment.format.toLowerCase() === "pdf";
+
+                              return (
+                                <div
+                                  key={index}
+                                  className="relative group border rounded-md overflow-hidden"
+                                  onClick={() => {
+                                    if (isImage) {
+                                      setSelectedAttachment(attachment);
+                                      setIsAttachmentModalOpen(true);
+                                    } else if (isPDF) {
+                                      window.open(attachment.url, "_blank");
+                                    } else {
+                                      // Download other file types
+                                      const a = document.createElement("a");
+                                      a.href = attachment.url;
+                                      a.download = attachment.original_filename;
+                                      a.click();
+                                    }
+                                  }}
+                                >
+                                  {isImage ? (
+                                    <img
+                                      src={attachment.url}
+                                      alt={attachment.original_filename}
+                                      className="w-full h-24 object-cover cursor-pointer"
+                                    />
+                                  ) : (
+                                    <div className="bg-gray-100 h-24 flex flex-col items-center justify-center p-2">
+                                      <FileText className="h-8 w-8 text-gray-500" />
+                                      <span className="text-xs mt-1 text-center truncate w-full px-1">
+                                        {attachment.original_filename}
+                                      </span>
+                                    </div>
+                                  )}
+                                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all flex items-center justify-center">
+                                    {isImage ? (
+                                      <ImageIcon className="h-6 w-6 text-white opacity-0 group-hover:opacity-100" />
+                                    ) : (
+                                      <FileText className="h-6 w-6 text-white opacity-0 group-hover:opacity-100" />
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            }
                           )}
                         </div>
                       </div>
@@ -597,6 +712,22 @@ const LabWork: React.FC = () => {
                 </div>
               )}
             </>
+          )}
+        </div>
+      </Modal>
+
+      {/* Attachment Viewing Modal */}
+      <Modal
+        isOpen={isAttachmentModalOpen}
+        onClose={() => setIsAttachmentModalOpen(false)}
+      >
+        <div className="bg-white p-4 w-full max-w-4xl max-h-[90vh]">
+          {selectedAttachment && (
+            <ViewAttachment
+              attachment={selectedAttachment}
+              onDelete={handleDeleteAttachment}
+              isDeleting={isDeletingAttachment}
+            />
           )}
         </div>
       </Modal>

@@ -261,37 +261,49 @@ const ProcessingTimeChart = ({ data }: { data: ProcessingTimeItem[] }) => (
   </div>
 );
 
-const StatusDistributionChart = ({ data }: { data: StatusDataItem[] }) => (
-  <div className="bg-white p-4 rounded-lg shadow mb-6">
-    <h2 className="text-lg font-bold mb-4">Order Status Distribution</h2>
-    <ResponsiveContainer width="100%" height={300}>
-      <PieChart>
-        <Pie
-          data={data}
-          cx="50%"
-          cy="50%"
-          labelLine={true}
-          outerRadius={100}
-          fill="#8884d8"
-          dataKey="percentage"
-          nameKey="label"
-          label={({ name, percent }: { name: string; percent: number }) =>
-            `${name}: ${(percent * 100).toFixed(0)}%`
-          }
-        >
-          {data.map((entry, index) => (
-            <Cell
-              key={`cell-${index}`}
-              fill={entry.id === "Fitted" ? "#00C49F" : "#FF8042"}
-            />
-          ))}
-        </Pie>
-        <Tooltip />
-        <Legend />
-      </PieChart>
-    </ResponsiveContainer>
-  </div>
-);
+const StatusDistributionChart = ({ data }: { data: StatusDataItem[] }) => {
+  // Define color palette for different statuses
+  const statusColors: Record<string, string> = {
+    Fitted: "#00C49F",
+    Pending: "#FFBB28",
+    Received: "#0088FE",
+    Cancelled: "#FF2C2C",
+    Rework: "#FF8042",
+    // Add more status-color mappings as needed
+  };
+
+  return (
+    <div className="bg-white p-4 rounded-lg shadow mb-6">
+      <h2 className="text-lg font-bold mb-4">Order Status Distribution</h2>
+      <ResponsiveContainer width="100%" height={300}>
+        <PieChart>
+          <Pie
+            data={data}
+            cx="50%"
+            cy="50%"
+            labelLine={true}
+            outerRadius={100}
+            fill="#8884d8"
+            dataKey="percentage"
+            nameKey="label"
+            label={({ name, percent }) =>
+              `${name}: ${(percent * 100).toFixed(0)}%`
+            }
+          >
+            {data.map((entry) => (
+              <Cell
+                key={`cell-${entry.id}`}
+                fill={statusColors[entry.id] || "#8884d8"} // Default color if status not found
+              />
+            ))}
+          </Pie>
+          <Tooltip />
+          <Legend />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
 
 const StatusOverTimeChart = ({ data }: { data: StatusOverTimeItem[] }) => (
   <div className="bg-white p-4 rounded-lg shadow">
@@ -341,17 +353,13 @@ const LabDashboardAnalytics: React.FC = () => {
     analyticsData
   ) as unknown as AnalyticsData;
 
-  useEffect(() => {
-    console.log("Lab Work Analytics Data:", analytics);
-  }, [analytics]);
-
   if (!analytics) {
     return (
       <div className="p-6">
         <h1 className="text-2xl font-bold mb-4">Lab Analytics</h1>
         <p>Loading analytics data...</p>
       </div>
-    );    
+    );
   }
 
   return (
