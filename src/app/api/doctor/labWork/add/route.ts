@@ -4,7 +4,6 @@ import dbConnect from "@/app/utils/dbConnect";
 import { labWorkSchema } from "@/schemas/zobLabWorkSchema";
 import { z } from "zod";
 import { uploadToCloudinary } from "@/app/utils/cloudinaryUpload";
-import DoctorModel from "@/app/model/Doctor.model";
 
 // File validation constants
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB

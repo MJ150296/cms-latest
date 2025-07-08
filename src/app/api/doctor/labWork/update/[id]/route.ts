@@ -107,8 +107,13 @@ export async function PUT(request: NextRequest) {
     const { attachments, ...updatesWithoutAttachments } = updates;
     const parsed = labWorkSchema.partial().parse(updatesWithoutAttachments);
 
-    // Prepare update operations
-    const updateOperations: any = {
+    interface UpdateOperations {
+      [key: string]: unknown;
+      $pull?: { attachments: { public_id: { $in: string[] } } };
+      $push?: { attachments: { $each: typeof newAttachments } };
+    }
+
+    const updateOperations: UpdateOperations = {
       ...parsed,
     };
 

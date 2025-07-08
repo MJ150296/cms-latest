@@ -1,5 +1,5 @@
 import { useAppSelector } from "@/app/redux/store/hooks";
-import React, { useEffect, useMemo } from "react";
+import React, { useMemo } from "react";
 import { useLabWorkAnalytics } from "./LabWorkAnalytics";
 import {
   LineChart,
