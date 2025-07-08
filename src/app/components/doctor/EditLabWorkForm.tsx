@@ -471,7 +471,7 @@ const EditLabWorkForm: React.FC<EditLabWorkFormProps> = ({
                 id="new-attachments"
                 type="file"
                 multiple
-                accept=".jpeg,.jpg,.png,.webp,.pdf"
+                accept="image/*, application/pdf"
                 className="hidden"
                 onChange={handleAddFiles}
               />
