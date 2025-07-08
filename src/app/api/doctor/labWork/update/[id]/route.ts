@@ -104,7 +104,8 @@ export async function PUT(request: NextRequest) {
     }));
 
     // Validate partial input using Zod (excluding attachments)
-    const { attachments, ...updatesWithoutAttachments } = updates;
+    const { attachments: _, ...updatesWithoutAttachments } = updates;
+
     const parsed = labWorkSchema.partial().parse(updatesWithoutAttachments);
 
     interface UpdateOperations {
