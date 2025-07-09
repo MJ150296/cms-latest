@@ -16,31 +16,25 @@ import {
   ClipboardPlus,
   LucideFlaskConical,
   FlaskConical,
-  Loader2,
 } from "lucide-react";
 import { useAppSelector } from "@/app/redux/store/hooks";
 import {
-  selectPatientError,
   selectPatientLoading,
   selectPatients,
 } from "@/app/redux/slices/patientSlice";
 import {
   selectAppointments,
-  selectAppointmentsError,
   selectAppointmentsLoading,
 } from "@/app/redux/slices/appointmentSlice";
 import {
   selectBillings,
-  selectBillingsError,
   selectBillingsLoading,
 } from "@/app/redux/slices/billingSlice";
 import { format } from "date-fns";
 import { DashboardBarChart } from "../../ui/DashboardBarChart";
 import { ChartConfig } from "@/components/ui/chart";
 import {
-  ProfileData,
   selectProfile,
-  selectProfileError,
   selectProfileLoading,
 } from "@/app/redux/slices/profileSlice";
 import { signIn, useSession } from "next-auth/react";
@@ -52,7 +46,6 @@ import { useRouter } from "next/navigation";
 import Loading from "@/app/components/loading/Loading";
 import {
   selectAllLabWorks,
-  selectLabWorkError,
   selectLabWorkLoading,
 } from "@/app/redux/slices/labWorkSlice";
 
@@ -64,20 +57,15 @@ interface BillingTreatment {
 export default function DoctorDashboard() {
   const patients = useAppSelector(selectPatients);
   const patientsLoading = useAppSelector(selectPatientLoading);
-  const patientsLoadingError = useAppSelector(selectPatientError);
   const appointments = useAppSelector(selectAppointments);
   const appointmentsLoading = useAppSelector(selectAppointmentsLoading);
-  const appointmentsLoadingError = useAppSelector(selectAppointmentsError);
   const billings = useAppSelector(selectBillings);
   const billingsLoading = useAppSelector(selectBillingsLoading);
-  const billingsLoadingError = useAppSelector(selectBillingsError);
   const profile = useAppSelector(selectProfile);
   const profileLoading = useAppSelector(selectProfileLoading);
-  const profileLoadingError = useAppSelector(selectProfileError);
 
   const labWorks = useAppSelector(selectAllLabWorks);
   const labWorksLoading = useAppSelector(selectLabWorkLoading);
-  const labWorksLoadingError = useAppSelector(selectLabWorkError);
 
   const { data: session, status: sessionStatus } = useSession();
 
