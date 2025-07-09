@@ -48,7 +48,7 @@ export default function Loading({ loadingMessage = false }: LoadingProps) {
         <Loader2 className="text-blue-500 w-12 h-12 animate-spin" />
         {loadingMessage && (
           <p className="text-lg text-gray-500 max-w-xl italic">
-            "{randomMessage}"
+            &quot;{randomMessage}&quot;
           </p>
         )}
       </div>

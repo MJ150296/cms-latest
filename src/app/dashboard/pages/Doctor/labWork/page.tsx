@@ -34,7 +34,6 @@ import EditLabWorkForm from "@/app/components/doctor/EditLabWorkForm";
 import LabDashboardAnalytics from "@/app/components/doctor/LabDashboardAnalytics";
 import { Attachment } from "@/app/model/LabWork.model";
 import ViewAttachment from "@/app/components/doctor/ViewAttachment";
-import Link from "next/link";
 
 // Update interface to match actual data structure
 export interface LabWorkItem {
