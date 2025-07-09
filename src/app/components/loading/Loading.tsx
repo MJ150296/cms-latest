@@ -43,8 +43,8 @@ export default function Loading({ loadingMessage = false }: LoadingProps) {
   }, []);
 
   return (
-    <div className="min-h-screen z-50 flex flex-col gap-y-5 items-center justify-center text-center px-4">
-      <div className="-mt-20">
+    <div className="min-h-screen w-full z-50 flex flex-col items-center justify-center px-4">
+      <div className="-mt-20 w-full flex flex-col justify-center items-center text-center gap-y-5">
         <Loader2 className="text-blue-500 w-12 h-12 animate-spin" />
         {loadingMessage && (
           <p className="text-lg text-gray-500 max-w-xl italic">

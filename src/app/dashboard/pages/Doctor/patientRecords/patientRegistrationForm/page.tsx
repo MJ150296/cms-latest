@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -23,7 +23,7 @@ import {
 
 // Redux hooks and patient slice action
 import { useAppDispatch } from "@/app/redux/store/hooks";
-import { addPatient } from "@/app/redux/slices/patientSlice";
+import { addPatient, fetchPatients } from "@/app/redux/slices/patientSlice";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { PreviewDialog } from "@/app/components/PreviewDialog";
 
