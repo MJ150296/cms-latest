@@ -111,7 +111,7 @@ export function AppSidebar() {
   const { data: session, status } = useSession();
   // When session is loading or undefined, show a simple loading text
   if (status === "loading" || !session) {
-    return <div className="p-4">Loading...</div>;
+    return null;
   }
 
   const userRole = session?.user?.role || "Patient";
@@ -153,7 +153,7 @@ export function AppSidebar() {
           })}
         </SidebarContent>
 
-        <SidebarFooter className="p-4 border-t border-gray-200">
+        <SidebarFooter className="p-4">
           <SignOut />
         </SidebarFooter>
       </Sidebar>

@@ -36,8 +36,6 @@ import FrequencyCard from "@/app/components/FrequencyCard";
 import { DialogFooterActions } from "@/app/components/DialogFooterActions";
 import Modal from "@/app/components/Modal";
 
-
-
 interface TransformedAppointment {
   _id: string;
   patientId: string;
@@ -439,14 +437,25 @@ export default function DoctorAppointments() {
 
   return (
     <DashboardLayout>
-      <div className="p-6 space-y-6">
-        <div className="flex flex-col md:flex-row justify-between items-center">
+      <div className="p-4 md:p-6 space-y-6">
+        <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Appointments</h1>
-          <div className="flex flex-1 flex-wrap items-center gap-2 justify-center md:justify-end mt-4 md:mt-0">
-            <Link href="/dashboard/pages/Doctor/appointments/bookAppointment">
+          <div>
+            <Link
+              href="/dashboard/pages/Doctor/appointments/bookAppointment"
+              className="hidden md:block"
+            >
               <Button variant="default" className="w-full sm:w-auto">
                 <BookPlus size={16} className="mr-2" />
                 Add New
+              </Button>
+            </Link>
+            <Link
+              href="/dashboard/pages/Doctor/appointments/bookAppointment"
+              className="md:hidden"
+            >
+              <Button variant="default">
+                <BookPlus size={16} />
               </Button>
             </Link>
           </div>

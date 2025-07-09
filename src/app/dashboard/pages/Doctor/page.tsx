@@ -15,21 +15,46 @@ import {
   UserRoundPlus,
   ClipboardPlus,
   LucideFlaskConical,
+  FlaskConical,
+  Loader2,
 } from "lucide-react";
 import { useAppSelector } from "@/app/redux/store/hooks";
-import { selectPatients } from "@/app/redux/slices/patientSlice";
-import { selectAppointments } from "@/app/redux/slices/appointmentSlice";
-import { selectBillings } from "@/app/redux/slices/billingSlice";
+import {
+  selectPatientError,
+  selectPatientLoading,
+  selectPatients,
+} from "@/app/redux/slices/patientSlice";
+import {
+  selectAppointments,
+  selectAppointmentsError,
+  selectAppointmentsLoading,
+} from "@/app/redux/slices/appointmentSlice";
+import {
+  selectBillings,
+  selectBillingsError,
+  selectBillingsLoading,
+} from "@/app/redux/slices/billingSlice";
 import { format } from "date-fns";
 import { DashboardBarChart } from "../../ui/DashboardBarChart";
 import { ChartConfig } from "@/components/ui/chart";
-import { ProfileData } from "@/app/redux/slices/profileSlice";
-import { useSession } from "next-auth/react";
+import {
+  ProfileData,
+  selectProfile,
+  selectProfileError,
+  selectProfileLoading,
+} from "@/app/redux/slices/profileSlice";
+import { signIn, useSession } from "next-auth/react";
 import Image from "next/image";
 import IconButtonWithTooltip from "@/app/components/IconButtonWithTooltip";
 import DataTable from "@/app/components/DataTable";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import Loading from "@/app/components/loading/Loading";
+import {
+  selectAllLabWorks,
+  selectLabWorkError,
+  selectLabWorkLoading,
+} from "@/app/redux/slices/labWorkSlice";
 
 interface BillingTreatment {
   treatment: string;
@@ -38,14 +63,42 @@ interface BillingTreatment {
 
 export default function DoctorDashboard() {
   const patients = useAppSelector(selectPatients);
+  const patientsLoading = useAppSelector(selectPatientLoading);
+  const patientsLoadingError = useAppSelector(selectPatientError);
   const appointments = useAppSelector(selectAppointments);
+  const appointmentsLoading = useAppSelector(selectAppointmentsLoading);
+  const appointmentsLoadingError = useAppSelector(selectAppointmentsError);
   const billings = useAppSelector(selectBillings);
-  const profile = useAppSelector(
-    (state) => state?.profile?.profile as ProfileData
-  );
-  const { data: session } = useSession();
+  const billingsLoading = useAppSelector(selectBillingsLoading);
+  const billingsLoadingError = useAppSelector(selectBillingsError);
+  const profile = useAppSelector(selectProfile);
+  const profileLoading = useAppSelector(selectProfileLoading);
+  const profileLoadingError = useAppSelector(selectProfileError);
 
-  const { data: labWorks } = useAppSelector((state) => state.labWork);
+  const labWorks = useAppSelector(selectAllLabWorks);
+  const labWorksLoading = useAppSelector(selectLabWorkLoading);
+  const labWorksLoadingError = useAppSelector(selectLabWorkError);
+
+  const { data: session, status: sessionStatus } = useSession();
+
+  // Combined loading state
+  const isDataLoading = useMemo(
+    () =>
+      sessionStatus === "loading" ||
+      profileLoading ||
+      patientsLoading ||
+      appointmentsLoading ||
+      billingsLoading ||
+      labWorksLoading,
+    [
+      sessionStatus,
+      profileLoading,
+      patientsLoading,
+      appointmentsLoading,
+      billingsLoading,
+      labWorksLoading,
+    ]
+  );
 
   const [tableData, setTableData] = useState<
     {
@@ -349,6 +402,39 @@ export default function DoctorDashboard() {
     ].map((month) => ({ month, users: monthlyData[month] || 0 }));
   }, [patients]);
 
+  if (isDataLoading) {
+    return (
+      <DashboardLayout>
+        <Loading />
+      </DashboardLayout>
+    );
+  }
+
+  // Check session availability
+  if (sessionStatus !== "authenticated" || !session) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center h-[80vh] text-center">
+          <AlertTriangle className="text-red-500 w-16 h-16 mb-4" />
+          <h2 className="text-xl font-semibold mb-2">Session Not Available</h2>
+          <p className="text-gray-600 mb-4">
+            Please sign in to access the dashboard
+          </p>
+          <Button onClick={() => signIn()}>Sign In</Button>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // Check profile availability
+  if (!profile) {
+    return (
+      <DashboardLayout>
+        <Loading />
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <div className="px-1 space-y-3">
@@ -365,6 +451,17 @@ export default function DoctorDashboard() {
             </h1>
             <div className="flex pr-5 gap-x-5">
               <div className="hidden md:flex gap-x-3 items-end">
+                <IconButtonWithTooltip
+                  href="/dashboard/pages/Doctor/labWork"
+                  tooltip="Add Lab Work"
+                  icon={
+                    <FlaskConical
+                      size={18}
+                      className="text-red-500 group-hover:text-white"
+                    />
+                  }
+                  hoverBgColor="red"
+                />
                 <IconButtonWithTooltip
                   href="/dashboard/pages/Doctor/appointments/bookAppointment"
                   tooltip="Book Appointment"

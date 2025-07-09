@@ -1,6 +1,6 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "../ui/AppSidebar";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useAppDispatch, useAppSelector } from "@/app/redux/store/hooks";
 import { fetchPatients, selectPatients } from "@/app/redux/slices/patientSlice";
@@ -28,6 +28,8 @@ export default function DashboardLayout({
   const profile = useAppSelector((state) => {
     return state?.profile?.profile as ProfileData;
   });
+  const { data: labWorks } = useAppSelector((state) => state.labWork);
+
   useEffect(() => {
     const fetchUserData = async () => {
       if (!session?.user) return;
@@ -48,13 +50,15 @@ export default function DashboardLayout({
           );
         }
 
+        if (!labWorks?.length) {
+          fetchTasks.push(() => dispatch(fetchLabWorks()));
+        }
+
         if (!profile) {
           fetchTasks.push(() => dispatch(fetchProfile({ userId: id, role })));
         }
 
         fetchTasks.push(() => dispatch(fetchDoctors({ userId: id })));
-
-        fetchTasks.push(() => dispatch(fetchLabWorks()));
       }
 
       if (role === "Doctor" && !patients?.length) {

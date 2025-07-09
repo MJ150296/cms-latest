@@ -123,4 +123,13 @@ const labWorkSlice = createSlice({
 });
 
 export const { clearLabWorkError } = labWorkSlice.actions;
+// Selectors (add these at the end of the file)
+export const selectAllLabWorks = (state: { labWork: LabWorkState }) =>
+  state.labWork.data;
+
+export const selectLabWorkLoading = (state: { labWork: LabWorkState }) =>
+  state.labWork.loading;
+
+export const selectLabWorkError = (state: { labWork: LabWorkState }) =>
+  state.labWork.error;
 export default labWorkSlice.reducer;
