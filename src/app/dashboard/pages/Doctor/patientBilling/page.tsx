@@ -7,7 +7,6 @@ import { selectPatients, Patient } from "@/app/redux/slices/patientSlice";
 import { useSession } from "next-auth/react";
 import { createBilling, selectBillings } from "@/app/redux/slices/billingSlice";
 import Loading from "@/app/components/loading/Loading";
-import SelectPatientMessage from "@/app/components/SelectPatientMessage";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import DashboardLayout from "@/app/dashboard/layout/DashboardLayout";
@@ -164,7 +163,6 @@ export default function PatientRecords() {
                 isLoading={isLoading}
               />
             ) : (
-              // <SelectPatientMessage />
               <>
                 <BillingNote />
                 <BillingAnalytics />
