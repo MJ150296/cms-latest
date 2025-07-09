@@ -56,8 +56,9 @@ const BillingNote = () => {
 
           <div className="mt-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-md">
             <p className="text-sm text-yellow-700">
-              <span className="font-medium">Tip:</span> Search for "ES000001" to
-              see a sample patient with existing billing records
+              <span className="font-medium">Tip:</span> Search for
+              &quot;ES000001&quot; to see a sample patient with existing billing
+              records
             </p>
           </div>
         </div>

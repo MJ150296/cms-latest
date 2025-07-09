@@ -51,7 +51,6 @@ export default function BillingAnalytics() {
 
   // 1. Deep Billing Trends Analysis
   const billingTrends = useMemo(() => {
-    const now = new Date();
     const periodData: Record<string, number> = {};
     const comparisonData: Record<string, number> = {};
     const periodLabels: string[] = [];
