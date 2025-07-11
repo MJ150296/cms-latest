@@ -1,5 +1,4 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
 import { LabWorkInput } from "@/schemas/zobLabWorkSchema";
 import { Types } from "mongoose";
 
@@ -38,42 +37,85 @@ const initialState: LabWorkState = {
   error: null,
 };
 
-// ⚡ Fetch all lab works
-export const fetchLabWorks = createAsyncThunk("labWork/fetchAll", async () => {
-  const res = await axios.get<ILabWork[]>("/api/doctor/labWork/fetchAll");
-  return res.data;
-});
+// ✅ Fetch all lab works
+export const fetchLabWorks = createAsyncThunk(
+  "labWork/fetchAll",
+  async (
+    { userId, role }: { userId: string; role: "Doctor" | "Patient" },
+    { rejectWithValue }
+  ) => {
+    let url = "";
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+    };
 
-// ➕ Create lab work
+    if (role === "Doctor") {
+      url = "/api/doctor/labWork/fetchAll";
+      headers["x-doctor-user-id"] = userId;
+    } else if (role === "Patient") {
+      url = "/api/doctor/labWork/fetchAll";
+      headers["x-patient-user-id"] = userId;
+    } else {
+      return rejectWithValue("Invalid role");
+    }
+
+    try {
+      const response = await fetch(url, { method: "GET", headers });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(
+          errorData.error || "Failed to fetch appointments"
+        );
+      }
+
+      const data = await response.json();
+      return data;
+    } catch {
+      return rejectWithValue("An error occurred while fetching appointments");
+    }
+  }
+);
+
+// ✅ Create lab work
 export const createLabWork = createAsyncThunk(
   "labWork/create",
   async (formData: FormData) => {
-    const res = await axios.post<ILabWork>("/api/doctor/labWork/add", formData);
-    return res.data;
+    const res = await fetch("/api/doctor/labWork/add", {
+      method: "POST",
+      body: formData,
+    });
+    if (!res.ok) throw new Error("Failed to create lab work");
+    return (await res.json()) as ILabWork;
   }
 );
 
-// 🔄 Update lab work
+// ✅ Update lab work
 export const updateLabWork = createAsyncThunk(
   "labWork/update",
   async ({ id, updates }: { id: string; updates: FormData }) => {
-    const res = await axios.put<ILabWork>(
-      `/api/doctor/labWork/update/${id}`,
-      updates
-    );
-    return res.data;
+    const res = await fetch(`/api/doctor/labWork/update/${id}`, {
+      method: "PUT",
+      body: updates,
+    });
+    if (!res.ok) throw new Error("Failed to update lab work");
+    return (await res.json()) as ILabWork;
   }
 );
 
-// ❌ Delete lab work
+// ✅ Delete lab work
 export const deleteLabWork = createAsyncThunk(
   "labWork/delete",
   async (id: string) => {
-    await axios.delete(`/api/doctor/labWork/delete/${id}`);
+    const res = await fetch(`/api/doctor/labWork/delete/${id}`, {
+      method: "DELETE",
+    });
+    if (!res.ok) throw new Error("Failed to delete lab work");
     return id;
   }
 );
 
+// Slice with complete loading/error handling
 const labWorkSlice = createSlice({
   name: "labWork",
   initialState,
@@ -84,6 +126,7 @@ const labWorkSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // Fetch cases
       .addCase(fetchLabWorks.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -97,16 +140,38 @@ const labWorkSlice = createSlice({
         state.error = action.error.message || "Failed to fetch lab work";
       })
 
+      // Create cases (added pending/rejected)
+      .addCase(createLabWork.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(createLabWork.fulfilled, (state, action) => {
         state.data.unshift(action.payload);
+        state.loading = false;
+      })
+      .addCase(createLabWork.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Failed to create lab work";
+      })
+
+      // Update cases (added pending/rejected)
+      .addCase(updateLabWork.pending, (state) => {
+        state.loading = true;
+        state.error = null;
       })
       .addCase(updateLabWork.fulfilled, (state, action) => {
         const index = state.data.findIndex(
           (item) => item._id === action.payload._id
         );
         if (index !== -1) state.data[index] = action.payload;
+        state.loading = false;
       })
-      // Delete cases
+      .addCase(updateLabWork.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Failed to update lab work";
+      })
+
+      // Delete cases (fixed error handling)
       .addCase(deleteLabWork.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -117,7 +182,8 @@ const labWorkSlice = createSlice({
       })
       .addCase(deleteLabWork.rejected, (state, action) => {
         state.loading = false;
-        state.error = (action.payload as string) || "Failed to delete lab work";
+        // Fixed to use action.error instead of action.payload
+        state.error = action.error.message || "Failed to delete lab work";
       });
   },
 });

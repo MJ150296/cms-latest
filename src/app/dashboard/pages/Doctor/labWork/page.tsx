@@ -20,7 +20,11 @@ import { cn } from "@/lib/utils";
 import DashboardLayout from "@/app/dashboard/layout/DashboardLayout";
 import AddLabWorkForm from "@/app/components/doctor/AddLabWorkForm";
 import { useAppDispatch, useAppSelector } from "@/app/redux/store/hooks";
-import { deleteLabWork, fetchLabWorks } from "@/app/redux/slices/labWorkSlice";
+import {
+  deleteLabWork,
+  fetchLabWorks,
+  selectAllLabWorks,
+} from "@/app/redux/slices/labWorkSlice";
 import Modal from "@/app/components/Modal";
 import { Label } from "@/components/ui/label";
 import {
@@ -34,6 +38,7 @@ import EditLabWorkForm from "@/app/components/doctor/EditLabWorkForm";
 import LabDashboardAnalytics from "@/app/components/doctor/LabDashboardAnalytics";
 import { Attachment } from "@/app/model/LabWork.model";
 import ViewAttachment from "@/app/components/doctor/ViewAttachment";
+import { useSession } from "next-auth/react";
 
 // Update interface to match actual data structure
 export interface LabWorkItem {
@@ -65,6 +70,8 @@ const statusColor = {
 };
 
 const LabWork: React.FC = () => {
+  const { data: session } = useSession();
+
   const dispatch = useAppDispatch();
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -89,7 +96,7 @@ const LabWork: React.FC = () => {
   const [isDeletingAttachment, setIsDeletingAttachment] = useState(false);
 
   // Get actual data from Redux store
-  const { data: labWorks } = useAppSelector((state) => state.labWork);
+  const labWorks = useAppSelector(selectAllLabWorks);
 
   // Update handleDelete
   const handleDelete = () => {
@@ -138,10 +145,21 @@ const LabWork: React.FC = () => {
     return filteredData.slice(startIndex, startIndex + itemsPerPage);
   }, [currentPage, filteredData, itemsPerPage]);
 
-  // Fetch data on component mount
   useEffect(() => {
-    dispatch(fetchLabWorks());
-  }, [dispatch]);
+    if (session) {
+      const { id, role } = session.user;
+      if (role === "Doctor" || role === "Patient") {
+        dispatch(fetchLabWorks({ userId: id, role }));
+      } else {
+        console.warn("Unsupported role:", role);
+      }
+    }
+  }, [session, dispatch]);
+
+  // Fetch data on component mount
+  // useEffect(() => {
+  //   dispatch(fetchLabWorks({}));
+  // }, [dispatch]);
 
   // Handle page change
   const goToPage = (page: number) => {
@@ -256,13 +274,13 @@ const LabWork: React.FC = () => {
             <FlaskConical className="text-primary" />
             Lab Work Orders
           </div>
-            <Button
-              className="hidden md:flex gap-2"
-              onClick={() => setIsAddModalOpen(true)}
-            >
-              <PlusCircle size={18} />
-              Add New Lab Work
-            </Button>
+          <Button
+            className="hidden md:flex gap-2"
+            onClick={() => setIsAddModalOpen(true)}
+          >
+            <PlusCircle size={18} />
+            Add New Lab Work
+          </Button>
 
           <Button
             className="flex md:hidden gap-2"
@@ -279,7 +297,14 @@ const LabWork: React.FC = () => {
               <AddLabWorkForm
                 onClose={() => setIsAddModalOpen(false)}
                 onSuccess={() => {
-                  dispatch(fetchLabWorks());
+                  if (session) {
+                    const { id, role } = session.user;
+                    if (role === "Doctor" || role === "Patient") {
+                      dispatch(fetchLabWorks({ userId: id, role }));
+                    } else {
+                      console.warn("Unsupported role:", role);
+                    }
+                  }
                   setIsAddModalOpen(false);
                 }}
               />
@@ -459,7 +484,15 @@ const LabWork: React.FC = () => {
               labWork={selectedLabWork}
               onCancel={() => setIsEditMode(false)}
               onSuccess={() => {
-                dispatch(fetchLabWorks());
+                if (session) {
+                  const { id, role } = session.user;
+                  if (role === "Doctor" || role === "Patient") {
+                    dispatch(fetchLabWorks({ userId: id, role }));
+                  } else {
+                    console.warn("Unsupported role:", role);
+                  }
+                }
+                // dispatch(fetchLabWorks());
                 setIsEditMode(false);
                 setIsModalOpen(false);
                 setSelectedLabWork(null);

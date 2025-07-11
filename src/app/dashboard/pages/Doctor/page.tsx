@@ -102,6 +102,12 @@ export default function DoctorDashboard() {
   const router = useRouter();
 
   useEffect(() => {
+    if (labWorks) {
+      console.log("labWorks", labWorks);
+    }
+  }, [labWorks]);
+
+  useEffect(() => {
     if (patients) {
       const options: Intl.DateTimeFormatOptions = {
         year: "numeric",
