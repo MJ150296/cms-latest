@@ -53,7 +53,7 @@ export default function DashboardLayout({
           );
         }
 
-        if (!labWorks?.length) {
+        if (labWorks.length === 0) {
           fetchTasks.push(() => dispatch(fetchLabWorks({ userId: id, role })));
         }
 
