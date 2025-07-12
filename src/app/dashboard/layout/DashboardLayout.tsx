@@ -53,7 +53,7 @@ export default function DashboardLayout({
           );
         }
 
-        if (labWorks.length === 0) {
+        if (!labWorks?.length) {
           fetchTasks.push(() => dispatch(fetchLabWorks({ userId: id, role })));
         }
 
@@ -76,6 +76,9 @@ export default function DashboardLayout({
           console.error(`❌ Task ${i + 1} failed:`, result.reason);
         }
       });
+
+      console.log("fetchTasks", results);
+      console.log("labworks", labWorks);
     };
 
     fetchUserData();
