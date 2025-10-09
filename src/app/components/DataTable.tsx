@@ -60,8 +60,8 @@ const DataTable = <T extends object>({
   >("all");
 
   // Helper function to parse dd/mm/yyyy format
-  const parseDate = (val: any): Date | null => {
-    if (!val) return null;
+  const parseDate = (val: unknown): Date | null => {
+    if (val == null) return null;
 
     if (typeof val === "string") {
       // Handle dd/mm/yyyy format
@@ -71,7 +71,7 @@ const DataTable = <T extends object>({
         return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
       }
 
-      // Try parsing as ISO string or other date format
+      // Try parsing as ISO or other date formats
       const date = new Date(val);
       return isNaN(date.getTime()) ? null : date;
     }

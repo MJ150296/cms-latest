@@ -484,7 +484,7 @@ const PatientDetailView = ({
         isOpen={isDeleteModalOpen}
         onClose={closeDeleteModal}
         patient={patient}
-        onPatientDeleted={(deletedPatientId: string) => {
+        onPatientDeleted={() => {
           if (session?.user.id) {
             dispatch(
               fetchPatients({ userId: session.user.id, role: "Doctor" })

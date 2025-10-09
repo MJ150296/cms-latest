@@ -76,7 +76,7 @@ export async function DELETE(request: NextRequest) {
       },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error("Delete patient error:", error);
     return NextResponse.json(
       { error: "Failed to delete patient" },

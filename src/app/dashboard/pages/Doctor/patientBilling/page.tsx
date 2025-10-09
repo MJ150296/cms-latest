@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/app/redux/store/hooks";
 import { selectPatients, Patient } from "@/app/redux/slices/patientSlice";
 import { useSession } from "next-auth/react";

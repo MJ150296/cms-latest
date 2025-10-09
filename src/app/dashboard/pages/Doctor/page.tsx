@@ -156,7 +156,7 @@ export default function DoctorDashboard() {
 
     const convertTo24Hour = (time12h: string): string => {
       const [time, modifier] = time12h.split(" ");
-      let [hours, minutes] = time.split(":");
+      const [hours, minutes] = time.split(":");
 
       let h = parseInt(hours, 10);
       if (modifier === "PM" && h !== 12) h += 12;
