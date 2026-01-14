@@ -156,7 +156,8 @@ export default function BillingAnalytics() {
 
     // Create patient data with safe values
     for (const [patientId, count] of Object.entries(patientCounts)) {
-      const patient = patients.find((p) => p.PatientId === patientId);
+      const patient = patients.find((p) => p._id === patientId);
+      console.log("Processing patientId:", patientId, "Patient data:", patient);
       const patientBillings = billings.filter((b) => b.patientId === patientId);
 
       // Sort billings safely
@@ -165,8 +166,8 @@ export default function BillingAnalytics() {
       );
 
       patientData.push({
-        patientId,
-        name: patient ? patient.fullName : patientId,
+        patientId: patient?.PatientId || patientId,
+        name: patient ? patient.fullName : "N/A",
         count,
         lastBillingDate: patientBillings[0]?.date || null,
       });
