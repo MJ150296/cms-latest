@@ -50,7 +50,7 @@ export default function AIAssistant() {
     } catch (_error) {
       const errorMessage: Message = {
         role: "assistant",
-        content: "Sorry, I encountered an error processing your request.",
+        content: `Sorry, I encountered an error processing your request. ${_error instanceof Error ? _error.message : ""}`,
       };
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
@@ -91,9 +91,8 @@ export default function AIAssistant() {
           messages.map((msg, i) => (
             <div
               key={i}
-              className={`p-4 rounded-lg max-w-[80%] ${
-                msg.role === "user" ? "bg-blue-100 ml-auto" : "bg-white border"
-              }`}
+              className={`p-4 rounded-lg max-w-[80%] ${msg.role === "user" ? "bg-blue-100 ml-auto" : "bg-white border"
+                }`}
             >
               <div className="whitespace-pre-wrap">{msg.content}</div>
               {msg.data?.collectionsUsed && (

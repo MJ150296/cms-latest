@@ -266,7 +266,7 @@ export default function PatientRecords() {
                       ) {
                         try {
                           dateValue = new Date(value).toLocaleDateString();
-                        } catch (_error) {
+                        } catch {
                           dateValue = "Invalid Date";
                         }
                       }
