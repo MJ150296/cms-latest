@@ -1,39 +1,44 @@
-// // /api/manual-backup.ts
-// import { NextResponse } from "next/server";
-// import path from "path";
-// import { createReadStream } from "fs";
-// import dbConnect from "@/app/utils/dbConnect";
+// /api/manual-backup/route.ts
+import { NextResponse } from "next/server";
+import path from "path";
+import fs from "fs/promises";
+import dbConnect from "@/app/utils/dbConnect";
+import { triggerManualBackup } from "@/app/utils/backup";
 
-// export async function GET() {
-//   try {
-//     await dbConnect();
-//     await triggerManualBackup();
+export async function GET() {
+  try {
+    await dbConnect();
+    await triggerManualBackup();
 
-//     const backupsDir = path.join(process.cwd(), "backups");
-//     const files = await fs.promises.readdir(backupsDir);
-//     const latestBackup = files
-//       .filter((f) => f.startsWith("backup-"))
-//       .sort()
-//       .pop();
+    const backupsDir = path.join(process.cwd(), "backups");
+    const files = await fs.readdir(backupsDir);
 
-//     if (!latestBackup) {
-//       return NextResponse.json({ error: "No backup found" }, { status: 404 });
-//     }
+    const latestBackup = files
+      .filter((f) => f.startsWith("backup-"))
+      .sort()
+      .pop();
 
-//     const filePath = path.join(backupsDir, latestBackup);
-//     const fileStream = createReadStream(filePath);
+    if (!latestBackup) {
+      return NextResponse.json(
+        { error: "No backup found" },
+        { status: 404 }
+      );
+    }
 
-//     return new Response(fileStream, {
-//       headers: {
-//         "Content-Type": "application/zip",
-//         "Content-Disposition": `attachment; filename="${latestBackup}"`,
-//       },
-//     });
-//   } catch (error) {
-//     console.error("❌ Backup route failed:", error);
-//     return NextResponse.json(
-//       { error: (error as Error).message },
-//       { status: 500 }
-//     );
-//   }
-// }
+    const filePath = path.join(backupsDir, latestBackup);
+    const fileBuffer = await fs.readFile(filePath);
+
+    return new Response(fileBuffer, {
+      headers: {
+        "Content-Type": "application/zip",
+        "Content-Disposition": `attachment; filename="${latestBackup}"`,
+      },
+    });
+  } catch (error) {
+    console.error("❌ Backup route failed:", error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      { status: 500 }
+    );
+  }
+}
