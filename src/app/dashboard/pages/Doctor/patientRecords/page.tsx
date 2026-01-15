@@ -20,6 +20,22 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+type ContactValue =
+  | string
+  | string[]
+  | {
+    fullName?: string;
+    contactNumber?: string;
+    relationship?: string;
+  }
+  | {
+    street?: string;
+    city?: string;
+    state?: string;
+    postalCode?: string;
+  }
+  | undefined;
+
 export default function PatientRecords() {
   const searchParams = useSearchParams();
   const [searchInput, setSearchInput] = useState("");
@@ -196,18 +212,20 @@ export default function PatientRecords() {
                   {
                     header: "Contact",
                     accessorKey: "contactNumber",
-                    render: (value) => {
-                      // Handle the actual data structure - contactNumber might be nested
+                    render: (value: ContactValue) => {
                       let contactValue = "N/A";
 
                       if (typeof value === "string") {
                         contactValue = value;
-                      } else if (value && typeof value === "object") {
-                        // Check if it's the emergency contact object
-                        if ("contactNumber" in value) {
-                          contactValue = (value as any).contactNumber || "N/A";
-                        }
-                        // If it's an address object, we don't have a contact number
+                      } else if (Array.isArray(value)) {
+                        contactValue = value.join(", ");
+                      } else if (
+                        value &&
+                        typeof value === "object" &&
+                        "contactNumber" in value &&
+                        typeof value.contactNumber === "string"
+                      ) {
+                        contactValue = value.contactNumber;
                       }
 
                       return (
@@ -248,7 +266,7 @@ export default function PatientRecords() {
                       ) {
                         try {
                           dateValue = new Date(value).toLocaleDateString();
-                        } catch (error) {
+                        } catch (_error) {
                           dateValue = "Invalid Date";
                         }
                       }

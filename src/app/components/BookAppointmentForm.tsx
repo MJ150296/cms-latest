@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, ComponentType } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -196,7 +196,7 @@ const FormStep = ({
   currentStep: number;
   step: number;
   title: string;
-  icon: any;
+  icon: ComponentType<{ className?: string }>;
 }) => (
   <div className="flex items-center space-x-3">
     <div

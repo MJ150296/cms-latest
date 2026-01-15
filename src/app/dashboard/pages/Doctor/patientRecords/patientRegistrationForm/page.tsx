@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { ComponentType } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -129,13 +129,13 @@ const FormStep = ({
   currentStep: number;
   step: number;
   title: string;
-  icon: any;
+  icon: ComponentType<{ className?: string }>;
 }) => (
   <div className="flex items-center space-x-3">
     <div
       className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${currentStep >= step
-        ? "bg-blue-600 border-blue-600 text-white"
-        : "border-gray-300 text-gray-500"
+          ? "bg-blue-600 border-blue-600 text-white"
+          : "border-gray-300 text-gray-500"
         }`}
     >
       {currentStep > step ? (
@@ -152,6 +152,7 @@ const FormStep = ({
     </span>
   </div>
 );
+
 
 export default function PatientRegistrationForm() {
   const { data: session } = useSession();

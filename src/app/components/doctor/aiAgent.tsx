@@ -9,7 +9,7 @@ interface Message {
   content: string;
   data?: {
     collectionsUsed?: string[];
-    analysis?: any;
+    analysis?: unknown;
   };
 }
 
@@ -47,7 +47,7 @@ export default function AIAssistant() {
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
-    } catch (error) {
+    } catch (_error) {
       const errorMessage: Message = {
         role: "assistant",
         content: "Sorry, I encountered an error processing your request.",

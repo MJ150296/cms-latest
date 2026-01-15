@@ -45,7 +45,7 @@ async function executeQuery(
   }
 ): Promise<unknown[]> {
   try {
-    let results: any[] = [];
+    let results: unknown[] = [];
 
     switch (collection) {
       case "labworks":
@@ -216,7 +216,7 @@ export async function POST(req: Request) {
     }
 
     // --- Step 3: Execute queries safely ---
-    const results: Record<string, any[]> = {};
+    const results: Partial<Record<CollectionName, unknown[]>> = {};
 
     for (const operation of queryPlan.operations) {
       // Validate collection is allowed
