@@ -45,7 +45,7 @@ import {
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import TwoLineDashboardChart from "../TwoLineDashboardChart";
 
 import DataTable from "../DataTable";
@@ -196,8 +196,8 @@ const PatientDetailView = ({
       return timeFrame === "yearly"
         ? `${date.getFullYear()}`
         : `${date.getFullYear()}-${(date.getMonth() + 1)
-            .toString()
-            .padStart(2, "0")}`;
+          .toString()
+          .padStart(2, "0")}`;
     };
 
     // Process appointments
@@ -283,7 +283,7 @@ const PatientDetailView = ({
         </div>
 
         {/* Patient Metadata Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-sm">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-4 text-sm">
           <div>
             <span className="text-gray-500">Contact:</span>{" "}
             {patient.contactNumber || "NA"}
@@ -293,13 +293,17 @@ const PatientDetailView = ({
             {patient.gender || "NA"}
           </div>
           <div>
+            <span className="text-gray-500">Age:</span>{" "}
+            {patient.age || "NA"}
+          </div>
+          <div>
             <span className="text-gray-500">DOB:</span>{" "}
             {patient.dateOfBirth
               ? new Date(patient.dateOfBirth).toLocaleDateString("en-GB", {
-                  day: "2-digit",
-                  month: "short",
-                  year: "numeric",
-                })
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })
               : "NA"}{" "}
           </div>
           <div>
@@ -574,19 +578,18 @@ const PatientDetailView = ({
                 const statusValue = typeof v === "string" ? v : "N/A";
                 return (
                   <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      v === "Pending"
-                        ? "bg-yellow-100 text-yellow-700"
-                        : v === "Received"
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${v === "Pending"
+                      ? "bg-yellow-100 text-yellow-700"
+                      : v === "Received"
                         ? "bg-blue-100 text-blue-700"
                         : v === "Fitted"
-                        ? "bg-green-100 text-green-700"
-                        : v === "Rework"
-                        ? "bg-orange-100 text-orange-700"
-                        : v === "Cancelled"
-                        ? "bg-red-100 text-red-700"
-                        : "bg-gray-100 text-gray-700"
-                    }`}
+                          ? "bg-green-100 text-green-700"
+                          : v === "Rework"
+                            ? "bg-orange-100 text-orange-700"
+                            : v === "Cancelled"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-gray-100 text-gray-700"
+                      }`}
                   >
                     {statusValue}
                   </span>
@@ -916,9 +919,8 @@ const PatientDetailView = ({
                   <div>
                     <p className="text-muted-foreground">Amount Due</p>
                     <p
-                      className={`font-medium ${
-                        selectedBilling.amountDue < 0 ? "text-red-500" : ""
-                      }`}
+                      className={`font-medium ${selectedBilling.amountDue < 0 ? "text-red-500" : ""
+                        }`}
                     >
                       ₹{selectedBilling.amountDue?.toFixed(2) || 0}
                     </p>
@@ -1061,19 +1063,18 @@ const PatientDetailView = ({
                   <div>
                     <p className="text-muted-foreground">Status</p>
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        selectedLabwork.status === "Pending"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : selectedLabwork.status === "Received"
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${selectedLabwork.status === "Pending"
+                        ? "bg-yellow-100 text-yellow-700"
+                        : selectedLabwork.status === "Received"
                           ? "bg-blue-100 text-blue-700"
                           : selectedLabwork.status === "Fitted"
-                          ? "bg-green-100 text-green-700"
-                          : selectedLabwork.status === "Rework"
-                          ? "bg-orange-100 text-orange-700"
-                          : selectedLabwork.status === "Cancelled"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-gray-100 text-gray-700"
-                      }`}
+                            ? "bg-green-100 text-green-700"
+                            : selectedLabwork.status === "Rework"
+                              ? "bg-orange-100 text-orange-700"
+                              : selectedLabwork.status === "Cancelled"
+                                ? "bg-red-100 text-red-700"
+                                : "bg-gray-100 text-gray-700"
+                        }`}
                     >
                       {selectedLabwork.status || "N/A"}
                     </span>

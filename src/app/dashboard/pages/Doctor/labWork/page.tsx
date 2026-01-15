@@ -39,6 +39,7 @@ import LabDashboardAnalytics from "@/app/components/doctor/LabDashboardAnalytics
 import { Attachment } from "@/app/model/LabWork.model";
 import ViewAttachment from "@/app/components/doctor/ViewAttachment";
 import { useSession } from "next-auth/react";
+import Image from "next/image";
 
 // Update interface to match actual data structure
 export interface LabWorkItem {
@@ -723,7 +724,7 @@ const LabWork: React.FC = () => {
                                   }}
                                 >
                                   {isImage ? (
-                                    <img
+                                    <Image
                                       src={attachment.url}
                                       alt={attachment.original_filename}
                                       className="w-full h-24 object-cover cursor-pointer"

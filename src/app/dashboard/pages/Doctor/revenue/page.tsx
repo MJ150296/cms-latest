@@ -15,26 +15,13 @@ import {
 import {
   format,
   subMonths,
-  startOfMonth,
-  endOfMonth,
-  eachMonthOfInterval,
-  subYears,
 } from "date-fns";
 import {
-  ReceiptIndianRupee,
-  PieChart,
   IndianRupee,
   TrendingUp,
-  Calendar,
   FileText,
-  Search,
-  Filter,
   Download,
-  PlusCircle,
-  ChevronLeft,
-  ChevronRight,
   CreditCard,
-  Wallet,
   AlertCircle,
   CheckCircle,
   Clock,
@@ -47,17 +34,6 @@ import { selectPatients } from "@/app/redux/slices/patientSlice";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import Modal from "@/app/components/Modal";
-import { cn } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 
 interface RevenueStats {
@@ -85,12 +61,11 @@ export default function RevenueDashboard() {
     null
   );
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
-  const [paymentModeFilter, setPaymentModeFilter] = useState("All");
-  const [dateRange, setDateRange] = useState("all"); // all, month, quarter, year
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [searchTerm] = useState("");
+  const [statusFilter] = useState("All");
+  const [paymentModeFilter] = useState("All");
+  const [currentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   const { data: session } = useSession();
 
@@ -203,8 +178,8 @@ export default function RevenueDashboard() {
     const revenueGrowth =
       previousPeriodRevenue > 0
         ? ((currentPeriodRevenue - previousPeriodRevenue) /
-            previousPeriodRevenue) *
-          100
+          previousPeriodRevenue) *
+        100
         : 0;
 
     // Calculate collection efficiency
@@ -252,36 +227,12 @@ export default function RevenueDashboard() {
     });
   }, [mappedBillings, searchTerm, statusFilter, paymentModeFilter]);
 
-  // Pagination
-  const totalItems = filteredBillings.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  // Current page items
   const currentItems = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     return filteredBillings.slice(startIndex, startIndex + itemsPerPage);
   }, [currentPage, filteredBillings, itemsPerPage]);
 
-  const goToPage = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
-  };
-
-  const getPageNumbers = () => {
-    const pages = [];
-    const maxVisiblePages = 5;
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = startPage + maxVisiblePages - 1;
-
-    if (endPage > totalPages) {
-      endPage = totalPages;
-      startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    }
-
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(i);
-    }
-    return pages;
-  };
 
   const billingTableColumns: ColumnDef<BillingRecord, keyof BillingRecord>[] = [
     {
@@ -614,33 +565,8 @@ export default function RevenueDashboard() {
         {/* Billing Table */}
         <Card>
           <CardContent className="p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Billing Records</h3>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <Label>Items per page:</Label>
-                  <Select
-                    value={itemsPerPage.toString()}
-                    onValueChange={(value) => {
-                      setItemsPerPage(Number(value));
-                      setCurrentPage(1);
-                    }}
-                  >
-                    <SelectTrigger className="w-20">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="10">10</SelectItem>
-                      <SelectItem value="25">25</SelectItem>
-                      <SelectItem value="50">50</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
-
             <DataTable
-              title=""
+              title="Billing Records"
               data={currentItems}
               columns={billingTableColumns}
               searchFields={[
@@ -649,56 +575,11 @@ export default function RevenueDashboard() {
                 "modeOfPayment",
                 "status",
               ]}
-              showSearch={false} // We have our own search
+              showSearch={true} // We have our own search
               onRowClick={handleRowClick}
-              enableDateFilter={false}
+              enableDateFilter={true}
               dateField="date"
             />
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 border-t">
-                <div className="text-sm text-muted-foreground">
-                  Showing {Math.min(currentItems.length, itemsPerPage)} of{" "}
-                  {totalItems} records
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => goToPage(currentPage - 1)}
-                    disabled={currentPage === 1}
-                  >
-                    <ChevronLeft size={16} />
-                  </Button>
-
-                  {getPageNumbers().map((page) => (
-                    <Button
-                      key={page}
-                      variant={currentPage === page ? "default" : "outline"}
-                      size="icon"
-                      onClick={() => goToPage(page)}
-                    >
-                      {page}
-                    </Button>
-                  ))}
-
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => goToPage(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                  >
-                    <ChevronRight size={16} />
-                  </Button>
-                </div>
-
-                <div className="text-sm text-muted-foreground">
-                  Page {currentPage} of {totalPages}
-                </div>
-              </div>
-            )}
           </CardContent>
         </Card>
 

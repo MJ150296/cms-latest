@@ -1,13 +1,18 @@
-import LabWorkModel, { ILabWork } from "@/app/model/LabWork.model";
+import LabWorkModel from "@/app/model/LabWork.model";
 import OpenAI from "openai";
 import dbConnect from "@/app/utils/dbConnect";
 import { NextResponse } from "next/server";
-import BillingModel, { IBilling } from "@/app/model/Billing.model";
-import AppointmentModel, { IAppointment } from "@/app/model/Appointment.model";
+import BillingModel from "@/app/model/Billing.model";
+import AppointmentModel from "@/app/model/Appointment.model";
+import { PipelineStage } from "mongoose";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
+
+type MongoQuery = Record<string, unknown>;
+type MongoSort = Record<string, 1 | -1>;
+type MongoAggregation = PipelineStage[];
 
 interface CollectionAnalysis {
   neededCollections: ("labworks" | "billings" | "appointments")[];
@@ -15,21 +20,30 @@ interface CollectionAnalysis {
   reasoning: string;
 }
 
+type CollectionName = "labworks" | "billings" | "appointments";
+
 interface QueryPlan {
-  collections: ("labworks" | "billings" | "appointments")[];
+  collections: CollectionName[];
   operations: {
-    collection: "labworks" | "billings" | "appointments";
-    query: any;
-    sort?: Record<string, 1 | -1>;
+    collection: CollectionName;
+    query?: MongoQuery;
+    sort?: MongoSort;
     limit?: number;
-    aggregation?: any[];
-    calculation?: string;
+    aggregation?: MongoAggregation;
   }[];
   finalProcessing: string;
 }
 
 // Safe query execution with error handling
-async function executeQuery(collection: string, operation: any) {
+async function executeQuery(
+  collection: "labworks" | "billings" | "appointments",
+  operation: {
+    query?: MongoQuery;
+    sort?: MongoSort;
+    limit?: number;
+    aggregation?: MongoAggregation;
+  }
+): Promise<unknown[]> {
   try {
     let results: any[] = [];
 
@@ -120,7 +134,7 @@ export async function POST(req: Request) {
     try {
       analysis = JSON.parse(analysisText);
     } catch (parseError) {
-      console.error("Failed to parse analysis:", analysisText);
+      console.error("Failed to parse analysis:", parseError, analysisText);
       // Fallback analysis
       analysis = {
         neededCollections: ["appointments", "labworks", "billings"],
@@ -178,7 +192,7 @@ export async function POST(req: Request) {
     try {
       queryPlan = JSON.parse(planText || "{}");
     } catch (parseError) {
-      console.error("Failed to parse query plan:", planText);
+      console.error("Failed to parse query plan:", parseError, planText);
       // Create a simple fallback plan
       queryPlan = {
         collections: analysis.neededCollections,
@@ -195,7 +209,7 @@ export async function POST(req: Request) {
     // Ensure operations exist and are safe
     if (!queryPlan.operations || queryPlan.operations.length === 0) {
       queryPlan.operations = analysis.neededCollections.map((collection) => ({
-        collection: collection as any,
+        collection,
         query: {},
         limit: 5,
       }));

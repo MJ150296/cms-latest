@@ -90,7 +90,8 @@ const patientSchema = z.object({
   gender: z.enum(["Male", "Female", "Other"], {
     errorMap: () => ({ message: "Please select a valid gender" }),
   }),
-  dateOfBirth: z.string().min(1, { message: "Date of birth is required" }),
+  age: z.string().min(1, { message: "Age is required" }),
+  dateOfBirth: z.string(),
   email: z.string().email({ message: "Invalid email address" }),
   password: z
     .string()
@@ -132,11 +133,10 @@ const FormStep = ({
 }) => (
   <div className="flex items-center space-x-3">
     <div
-      className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${
-        currentStep >= step
-          ? "bg-blue-600 border-blue-600 text-white"
-          : "border-gray-300 text-gray-500"
-      }`}
+      className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${currentStep >= step
+        ? "bg-blue-600 border-blue-600 text-white"
+        : "border-gray-300 text-gray-500"
+        }`}
     >
       {currentStep > step ? (
         <CheckCircle2 className="w-5 h-5" />
@@ -145,9 +145,8 @@ const FormStep = ({
       )}
     </div>
     <span
-      className={`font-medium ${
-        currentStep >= step ? "text-blue-600" : "text-gray-500"
-      }`}
+      className={`font-medium ${currentStep >= step ? "text-blue-600" : "text-gray-500"
+        }`}
     >
       {title}
     </span>
@@ -173,6 +172,7 @@ export default function PatientRegistrationForm() {
       fullName: "",
       contactNumber: "",
       gender: "Male",
+      age: "",
       dateOfBirth: "",
       email: "",
       password: "",
@@ -355,9 +355,8 @@ export default function PatientRegistrationForm() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Step 1: Personal Information */}
             <Card
-              className={`transition-all duration-300 ${
-                currentStep >= 1 ? "opacity-100" : "opacity-60"
-              }`}
+              className={`transition-all duration-300 ${currentStep >= 1 ? "opacity-100" : "opacity-60"
+                }`}
             >
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center text-lg">
@@ -419,6 +418,27 @@ export default function PatientRegistrationForm() {
                             <option value="Female">Female</option>
                             <option value="Other">Other</option>
                           </select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="age"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center">
+                          <User className="w-4 h-4 mr-2" />
+                          Age
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="Enter age"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -489,9 +509,8 @@ export default function PatientRegistrationForm() {
 
             {/* Step 2: Address Information */}
             <Card
-              className={`transition-all duration-300 ${
-                currentStep >= 2 ? "opacity-100" : "opacity-60"
-              }`}
+              className={`transition-all duration-300 ${currentStep >= 2 ? "opacity-100" : "opacity-60"
+                }`}
             >
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center text-lg">
@@ -562,9 +581,8 @@ export default function PatientRegistrationForm() {
 
             {/* Step 3: Medical Information */}
             <Card
-              className={`transition-all duration-300 ${
-                currentStep >= 3 ? "opacity-100" : "opacity-60"
-              }`}
+              className={`transition-all duration-300 ${currentStep >= 3 ? "opacity-100" : "opacity-60"
+                }`}
             >
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center text-lg">
@@ -655,9 +673,8 @@ export default function PatientRegistrationForm() {
 
             {/* Step 4: Emergency Contact */}
             <Card
-              className={`transition-all duration-300 ${
-                currentStep >= 4 ? "opacity-100" : "opacity-60"
-              }`}
+              className={`transition-all duration-300 ${currentStep >= 4 ? "opacity-100" : "opacity-60"
+                }`}
             >
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center text-lg">
@@ -814,6 +831,10 @@ export default function PatientRegistrationForm() {
                   <dd>
                     <Badge variant="secondary">{previewData?.gender}</Badge>
                   </dd>
+                </div>
+                <div>
+                  <dt className="text-sm text-muted-foreground">Age</dt>
+                  <dd>{previewData?.age}</dd>
                 </div>
                 <div>
                   <dt className="text-sm text-muted-foreground">

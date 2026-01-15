@@ -96,7 +96,7 @@ export default function DoctorDashboard() {
       patient: string;
       contact: string;
       gender: "Male" | "Female" | "Other";
-      dob: string;
+      age: string;
       registeredAt: string;
     }[]
   >([]);
@@ -121,10 +121,7 @@ export default function DoctorDashboard() {
           patient: patient.fullName,
           contact: patient.contactNumber,
           gender: patient.gender,
-          dob: new Date(patient.dateOfBirth).toLocaleDateString(
-            "en-US",
-            options
-          ),
+          age: patient.age,
           registeredAt: new Date(patient.createdAt).toLocaleDateString(
             "en-US",
             options
@@ -484,13 +481,12 @@ export default function DoctorDashboard() {
                 <h1 className="text-xl md:text-2xl font-bold text-gray-900">
                   {(() => {
                     const hour = new Date().getHours();
-                    return `Good ${
-                      hour < 12
-                        ? "morning"
-                        : hour < 18
+                    return `Good ${hour < 12
+                      ? "morning"
+                      : hour < 18
                         ? "afternoon"
                         : "evening"
-                    }, ${profile.fullName.split(" ")[0]}`;
+                      }, ${profile.fullName.split(" ")[0]}`;
                   })()}
                 </h1>
                 <p className="text-gray-600 text-sm w-72 md:w-full">
@@ -599,7 +595,7 @@ export default function DoctorDashboard() {
                 id: item.id,
                 fullName: item.patient,
                 contactNumber: item.contact,
-                dob: item.dob,
+                age: item.age,
                 registeredAt: new Date(item.registeredAt).toLocaleDateString(
                   "en-GB"
                 ),
@@ -621,8 +617,8 @@ export default function DoctorDashboard() {
                 render: (value) => value || "N/A",
               },
               {
-                header: "Date of Birth",
-                accessorKey: "dob",
+                header: "Age",
+                accessorKey: "age",
                 render: (value) => value || "N/A",
               },
               {

@@ -2,11 +2,8 @@ import mongoose, { Connection, ConnectOptions } from "mongoose";
 import UserModel from "../model/User.model";
 import { setSuperAdminStatus } from "./globalStore";
 import { createWriteStream } from "fs";
-import { pipeline } from "stream/promises";
-import { createGzip } from "zlib";
 import archiver from "archiver";
 import { json2csv } from "json-2-csv";
-import { Readable } from "stream";
 import * as fs from "fs/promises";
 import * as path from "path";
 import { ObjectId } from "mongodb";
@@ -248,7 +245,7 @@ class StorageMonitor {
   }
 
   private async backupCollectionToCSV(
-    db: any,
+    db: mongoose.mongo.Db,
     collectionName: string,
     backupDir: string
   ): Promise<void> {
@@ -331,7 +328,9 @@ class StorageMonitor {
     return transformed;
   }
 
-  private getFieldsFromDocuments(documents: any[]): string[] {
+  private getFieldsFromDocuments(
+    documents: Record<string, unknown>[]
+  ): string[] {
     if (documents.length === 0) return [];
 
     const allFields = new Set<string>();
@@ -375,7 +374,7 @@ class StorageMonitor {
 
   // Alternative streaming version for large collections (more memory efficient)
   private async backupCollectionToCSVStreaming(
-    db: any,
+    db: mongoose.mongo.Db,
     collectionName: string,
     backupDir: string
   ): Promise<void> {
@@ -384,8 +383,8 @@ class StorageMonitor {
         const collection = db.collection(collectionName);
         const cursor = collection.find();
 
-        let fieldSet = new Set<string>();
-        const documents: any[] = [];
+        const fieldSet = new Set<string>();
+        const documents: Record<string, unknown>[] = [];
         let processedCount = 0;
         const batchSize = 1000;
 
@@ -441,7 +440,7 @@ class StorageMonitor {
   private async writeCSVBatch(
     csvFilePath: string,
     fields: string[],
-    documents: any[],
+    documents: Record<string, unknown>[],
     isFirstBatch: boolean
   ): Promise<void> {
     const csv = await json2csv(documents, {
