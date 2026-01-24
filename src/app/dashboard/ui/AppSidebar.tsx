@@ -17,7 +17,6 @@ import {
   ClipboardList,
   UserCog,
   BadgePercent,
-  User,
   FlaskConical,
   IndianRupee,
 } from "lucide-react";

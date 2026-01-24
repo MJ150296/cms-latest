@@ -12,11 +12,9 @@ import { ProfileData } from "@/app/redux/slices/profileSlice";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Aperture, Database } from "lucide-react";
-import { useSession } from "next-auth/react";
 
 export default function ProfileSettings() {
 
-  const { data: session } = useSession();
   const userProfile = useAppSelector(
     (state) => state?.profile?.profile as ProfileData
   );
