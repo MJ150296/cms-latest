@@ -1,44 +1,46 @@
-// /api/manual-backup/route.ts
 import { NextResponse } from "next/server";
-import path from "path";
 import fs from "fs/promises";
 import dbConnect from "@/app/utils/dbConnect";
 import { triggerManualBackup } from "@/app/utils/backup";
+import { auth } from "@/app/auth"; // ✅ IMPORTANT
 
-export async function GET() {
+export async function POST() {
   try {
     await dbConnect();
-    await triggerManualBackup();
 
-    const backupsDir = path.join(process.cwd(), "backups");
-    const files = await fs.readdir(backupsDir);
+    // ✅ NextAuth v5 way
+    const session = await auth();
 
-    const latestBackup = files
-      .filter((f) => f.startsWith("backup-"))
-      .sort()
-      .pop();
-
-    if (!latestBackup) {
-      return NextResponse.json(
-        { error: "No backup found" },
-        { status: 404 }
-      );
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const filePath = path.join(backupsDir, latestBackup);
-    const fileBuffer = await fs.readFile(filePath);
+    const { role, id } = session.user as {
+      role: "Admin" | "Doctor";
+      id: string;
+    };
+    console.log("User Role:", role);
+    
+    // (Optional) restrict backups to admin and doctor only
+    if (role !== "Admin" && role !== "Doctor") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
-    return new Response(fileBuffer, {
+    const { filePath, filename } = await triggerManualBackup({
+      role,
+      triggeredBy: id,
+    });
+
+    const buffer = await fs.readFile(filePath);
+
+    return new Response(buffer, {
       headers: {
         "Content-Type": "application/zip",
-        "Content-Disposition": `attachment; filename="${latestBackup}"`,
+        "Content-Disposition": `attachment; filename="${filename}"`,
       },
     });
-  } catch (error) {
-    console.error("❌ Backup route failed:", error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
-      { status: 500 }
-    );
+  } catch (err) {
+    console.error("Backup error:", err);
+    return NextResponse.json({ error: "Backup failed" }, { status: 500 });
   }
 }

@@ -85,17 +85,11 @@ const allMenuItems = [
     name: "Lab Work",
     icon: <FlaskConical size={20} />,
     path: (role: string) => `/dashboard/pages/${role}/labWork`,
-    roles: ["SuperAdmin", "Admin", "clientAdmin", "Doctor"],
+    roles: ["Doctor"],
   },
   {
     name: "Settings",
     icon: <Settings size={20} />,
-    path: "/dashboard/settings",
-    roles: ["SuperAdmin", "Admin", "clientAdmin"],
-  },
-  {
-    name: "Profile Setting",
-    icon: <User size={20} />,
     path: (role: string) => `/dashboard/pages/${role}/profile`,
     roles: ["Doctor", "Patient"],
   },
